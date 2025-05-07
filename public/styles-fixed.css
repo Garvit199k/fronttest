@@ -1,0 +1,212 @@
+/* Base styles */
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f5f5f5;
+  color: #333;
+}
+
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 1rem;
+  background-color: #fff;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  border-radius: 8px;
+}
+
+header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+h1 {
+  margin: 0 0 0.5rem 0;
+  font-weight: 700;
+  color: #222;
+}
+
+nav {
+  display: flex;
+  gap: 1rem;
+}
+
+.nav-btn {
+  background-color: transparent;
+  border: 2px solid #007bff;
+  color: #007bff;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.nav-btn:hover {
+  background-color: #007bff;
+  color: #fff;
+}
+
+.nav-btn.active {
+  background-color: #0056b3;
+  color: #fff;
+  border-color: #0056b3;
+}
+
+.auth-section {
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.auth-section h2 {
+  text-align: center;
+  color: #444;
+}
+
+.auth-section form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.auth-section label {
+  font-weight: 600;
+}
+
+.auth-section input,
+.auth-section select {
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.btn-primary {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 0.75rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 700;
+  transition: background-color 0.3s;
+}
+
+.btn-primary:hover {
+  background-color: #0056b3;
+}
+
+.test-text {
+  font-size: 1.2rem;
+  line-height: 1.5;
+  margin-bottom: 1rem;
+  user-select: none;
+  min-height: 100px;
+  border: 1px solid #ccc;
+  padding: 1rem;
+  border-radius: 6px;
+  background-color: #fafafa;
+}
+
+.test-text span.correct {
+  color: green;
+}
+
+.test-text span.incorrect {
+  color: red;
+}
+
+textarea#input-area {
+  width: 100%;
+  height: 100px;
+  font-size: 1.1rem;
+  padding: 0.5rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  resize: none;
+  box-sizing: border-box;
+}
+
+.stats {
+  display: flex;
+  justify-content: space-between;
+  margin: 1rem 0;
+  font-weight: 600;
+}
+
+.result {
+  margin-top: 1rem;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.result.victory {
+  color: green;
+}
+
+.result.try-again {
+  color: red;
+}
+
+#achievement-display {
+  font-size: 1rem;
+  color: #ff1493;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+/* Themes */
+body.theme-normal {
+  background-color: #f5f5f5;
+  color: #333;
+}
+
+body.theme-male {
+  background-color: #e6f0ff;
+  color: #003366;
+}
+
+body.theme-female {
+  background-color: #ffe6f0;
+  color: #99004d;
+}
+
+/* Leaderboard table */
+#leaderboard-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+#leaderboard-table th,
+#leaderboard-table td {
+  border: 1px solid #ddd;
+  padding: 0.5rem;
+  text-align: center;
+}
+
+#leaderboard-table th {
+  background-color: #007bff;
+  color: white;
+}
+
+/* About section */
+#about-section ul {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .stats {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  nav {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
