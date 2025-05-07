@@ -522,6 +522,13 @@
           }
         }
         resultElement.innerText += `\n${raceResult}`;
+      } else {
+        // Update level on normal mode finishTest
+        if (currentLevel < maxLevel) {
+          currentLevel++;
+          saveLevel();
+          updateAchievementDisplay();
+        }
       }
 
       playSound(soundFinish);
@@ -530,7 +537,14 @@
     // Initialize level on page load
     loadLevel();
 
-    // Removed themeSelector event listener as theme selector is removed from header
+    // Re-add themeSelector event listener for dynamic theme changes
+    const themeSelector = document.getElementById('theme');
+    if (themeSelector) {
+      themeSelector.addEventListener('change', (e) => {
+        document.body.className = '';
+        document.body.classList.add(`theme-${e.target.value}`);
+      });
+    }
 
     // Leaderboard functions
     function saveScore(username, wpm, accuracy, timeSpent) {
