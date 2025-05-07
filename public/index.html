@@ -13,8 +13,6 @@
       <div class="theme-selector">
         <label for="theme">Choose Theme:</label>
         <select id="theme">
-          <option value="male">Male</option>
-          <option value="female">Female</option>
           <option value="cute">Cute</option>
           <option value="pastel">Pastel</option>
           <option value="soft">Soft</option>
@@ -37,6 +35,16 @@
           <input type="text" id="login-username" placeholder="Enter your username" required />
           <label for="login-password">Password</label>
           <input type="password" id="login-password" placeholder="Enter your password" required />
+          <label for="login-theme">Choose Theme:</label>
+          <select id="login-theme" required>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+            <option value="cute">Cute</option>
+            <option value="pastel">Pastel</option>
+            <option value="soft">Soft</option>
+            <option value="calm">Calm</option>
+            <option value="dark">Dark</option>
+          </select>
           <button type="submit" class="btn-primary">Login</button>
         </form>
         <div id="login-message" class="auth-message"></div>
@@ -48,6 +56,11 @@
           <input type="text" id="register-username" placeholder="Choose a username" required />
           <label for="register-password">Password</label>
           <input type="password" id="register-password" placeholder="Choose a password" required />
+          <label for="register-theme">Choose Theme:</label>
+          <select id="register-theme" required>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+          </select>
           <button type="submit" class="btn-primary">Register</button>
         </form>
         <div id="register-message" class="auth-message"></div>
@@ -56,15 +69,36 @@
         <section id="test-container">
           <div id="test-text" class="test-text"></div>
           <textarea id="input-area" placeholder="Start typing here..." autofocus></textarea>
-          <div class="stats">
-            <div>Time Left: <span id="time-left">60</span>s</div>
-            <div>
-              Set Time:
-              <select id="time-option">
-                <option value="30">30 seconds</option>
-                <option value="60" selected>60 seconds</option>
-                <option value="120">2 minutes</option>
-                <option value="300">5 minutes</option>
+      <div class="stats">
+        <div>Time Left: <span id="time-left">60</span>s</div>
+        <div>
+          Set Time:
+          <select id="time-option">
+            <option value="30">30 seconds</option>
+            <option value="60" selected>60 seconds</option>
+            <option value="120">2 minutes</option>
+            <option value="300">5 minutes</option>
+          </select>
+        </div>
+        <div>
+          Mode:
+          <select id="mode-option">
+            <option value="normal" selected>Normal</option>
+            <option value="race">Race</option>
+          </select>
+        </div>
+        <div>
+          Sound:
+          <input type="checkbox" id="sound-toggle" checked />
+        </div>
+      </div>
+      <div id="race-progress" style="display:none; margin-bottom: 1rem;">
+        <div>Opponent Progress:</div>
+        <progress id="opponent-progress-bar" value="0" max="100" style="width: 100%; height: 20px;"></progress>
+      </div>
+      <div id="achievement-display" style="margin-bottom: 1rem; font-weight: bold; color: #ff1493;"></div>
+      <button id="restart-btn">Restart Test</button>
+      <div id="result" class="result"></div>
               </select>
             </div>
             <div>WPM: <span id="wpm">0</span></div>
@@ -132,7 +166,6 @@
     const accuracyElement = document.getElementById('accuracy');
     const errorsElement = document.getElementById('errors');
     const restartBtn = document.getElementById('restart-btn');
-    const themeSelector = document.getElementById('theme');
     const timeOption = document.getElementById('time-option');
     const resultElement = document.getElementById('result');
 
@@ -169,13 +202,11 @@
         case 'login':
           loginSection.style.display = 'block';
           navLogin.classList.add('active');
-          showLoginDetails(true);
           showRegisterDetails(false);
           break;
         case 'register':
           registerSection.style.display = 'block';
           navRegister.classList.add('active');
-          showLoginDetails(false);
           showRegisterDetails(true);
           break;
         case 'test':
@@ -195,20 +226,16 @@
 
     navLogin.addEventListener('click', () => showSection('login'));
     navRegister.addEventListener('click', () => showSection('register'));
+
+    // Hide leaderboard and about nav buttons initially
+    navLeaderboard.style.display = 'none';
+    navAbout.style.display = 'none';
+
     navLeaderboard.addEventListener('click', () => showSection('leaderboard'));
     navAbout.addEventListener('click', () => showSection('about'));
 
     // Show/hide login and register details
-    function showLoginDetails(show) {
-      let loginDetails = document.getElementById('login-details');
-      if (!loginDetails) {
-        loginDetails = document.createElement('p');
-        loginDetails.id = 'login-details';
-        loginDetails.textContent = 'Please enter your username and password to login to the typing test.';
-        loginSection.insertBefore(loginDetails, loginForm);
-      }
-      loginDetails.style.display = show ? 'block' : 'none';
-    }
+    // Removed showLoginDetails function and related text as per user request
 
     function showRegisterDetails(show) {
       let registerDetails = document.getElementById('register-details');
@@ -223,7 +250,8 @@
 
     // Fetch test text
     function fetchTestText() {
-      fetch('/api/texts')
+      const duration = parseInt(timeOption.value) || 60;
+      fetch(`/api/texts?duration=${duration}`)
         .then(response => response.json())
         .then(data => {
           testText = data.text;
@@ -351,10 +379,158 @@
 
     restartBtn.addEventListener('click', resetTest);
 
-    themeSelector.addEventListener('change', (e) => {
-      document.body.className = '';
-      document.body.classList.add(`theme-${e.target.value}`);
-    });
+    // Additional elements
+    const modeOption = document.getElementById('mode-option');
+    const soundToggle = document.getElementById('sound-toggle');
+    const raceProgress = document.getElementById('race-progress');
+    const opponentProgressBar = document.getElementById('opponent-progress-bar');
+    const achievementDisplay = document.getElementById('achievement-display');
+
+    // Sound effects
+    const soundKeypress = new Audio('https://actions.google.com/sounds/v1/keyboard/keyboard_press_key.wav');
+    const soundError = new Audio('https://actions.google.com/sounds/v1/cartoon/cartoon_boing.ogg');
+    const soundFinish = new Audio('https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg');
+
+    let raceInterval = null;
+    let opponentProgress = 0;
+    let currentLevel = 1;
+    const maxLevel = 100;
+
+    // Load level from localStorage
+    function loadLevel() {
+      const savedLevel = localStorage.getItem('typingTestLevel');
+      currentLevel = savedLevel ? parseInt(savedLevel) : 1;
+      updateAchievementDisplay();
+    }
+
+    // Save level to localStorage
+    function saveLevel() {
+      localStorage.setItem('typingTestLevel', currentLevel.toString());
+    }
+
+    // Update achievement display
+    function updateAchievementDisplay() {
+      achievementDisplay.textContent = `Level: ${currentLevel} / ${maxLevel}`;
+    }
+
+    // Simulate opponent progress in race mode
+    function startRace() {
+      opponentProgress = 0;
+      opponentProgressBar.value = 0;
+      raceProgress.style.display = 'block';
+
+      // Opponent speed depends on level (higher level, faster opponent)
+      const opponentSpeed = 0.5 + (currentLevel / maxLevel) * 1.5; // progress per second
+
+      raceInterval = setInterval(() => {
+        opponentProgress += opponentSpeed;
+        if (opponentProgress >= 100) {
+          opponentProgress = 100;
+          clearInterval(raceInterval);
+        }
+        opponentProgressBar.value = opponentProgress;
+      }, 1000);
+    }
+
+    // Stop race
+    function stopRace() {
+      clearInterval(raceInterval);
+      raceProgress.style.display = 'none';
+      opponentProgressBar.value = 0;
+    }
+
+    // Play sound if enabled
+    function playSound(sound) {
+      if (soundToggle.checked) {
+        sound.currentTime = 0;
+        sound.play();
+      }
+    }
+
+    // Override input event to add sound and race progress
+    inputArea.removeEventListener('input', inputHandler);
+    function inputHandler() {
+      if (!isTyping) {
+        isTyping = true;
+        timer = setInterval(updateTimer, 1000);
+        if (modeOption.value === 'race') {
+          startRace();
+        }
+      }
+
+      typedChars = inputArea.value.length;
+
+      const textSpans = testTextElement.querySelectorAll('span');
+      errors = 0;
+
+      textSpans.forEach((span, index) => {
+        const typedChar = inputArea.value[index];
+        if (typedChar == null) {
+          span.classList.remove('correct', 'incorrect');
+        } else if (typedChar === span.innerText) {
+          span.classList.add('correct');
+          span.classList.remove('incorrect');
+          playSound(soundKeypress);
+        } else {
+          span.classList.add('incorrect');
+          span.classList.remove('correct');
+          errors++;
+          playSound(soundError);
+        }
+      });
+
+      totalErrors = errors;
+      errorsElement.innerText = totalErrors;
+
+      const correctChars = typedChars - totalErrors;
+      const accuracy = Math.round((correctChars / typedChars) * 100) || 0;
+      accuracyElement.innerText = accuracy;
+
+      const timeSpent = (parseInt(timeOption.value) - timeLeft);
+      const wpm = Math.round(((correctChars / 5) / (timeSpent / 60)) || 0);
+      wpmElement.innerText = wpm;
+
+      if (inputArea.value.length === testText.length) {
+        finishTest();
+      }
+    }
+    inputArea.addEventListener('input', inputHandler);
+
+    // Override finishTest to add race and achievement logic
+    const originalFinishTest = finishTest;
+    finishTest = function() {
+      originalFinishTest();
+
+      if (modeOption.value === 'race') {
+        stopRace();
+        const userProgress = (typedChars / testText.length) * 100;
+        const opponentFinished = opponentProgress >= 100;
+        let raceResult = '';
+        if (userProgress >= 100 && (!opponentFinished || wpmElement.innerText >= opponentProgressBar.value)) {
+          raceResult = 'You won the race! 🎉';
+          if (currentLevel < maxLevel) {
+            currentLevel++;
+            saveLevel();
+            updateAchievementDisplay();
+          }
+        } else {
+          raceResult = 'You lost the race. Try again!';
+          if (currentLevel > 1) {
+            currentLevel--;
+            saveLevel();
+            updateAchievementDisplay();
+          }
+        }
+        resultElement.innerText += `\n${raceResult}`;
+      }
+
+      playSound(soundFinish);
+    };
+
+    // Initialize level on page load
+    loadLevel();
+
+    // Removed themeSelector event listener as theme selector is removed from header
 
     // Leaderboard functions
     function saveScore(username, wpm, accuracy, timeSpent) {
@@ -387,6 +563,7 @@
       e.preventDefault();
       const username = document.getElementById('login-username').value.trim();
       const password = document.getElementById('login-password').value.trim();
+      const theme = document.getElementById('login-theme').value;
 
       if (!username || !password) {
         loginMessage.innerText = 'Please enter username and password.';
@@ -398,7 +575,7 @@
         const response = await fetch('/api/auth', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'login', username, password }),
+          body: JSON.stringify({ action: 'login', username, password, theme }),
         });
         const data = await response.json();
 
@@ -410,6 +587,15 @@
           document.getElementById('authenticated-area').style.display = 'block';
           loginSection.style.display = 'none';
           registerSection.style.display = 'none';
+
+          // Show leaderboard and about nav buttons after login
+          navLeaderboard.style.display = 'inline-block';
+          navAbout.style.display = 'inline-block';
+
+          // Apply selected theme
+          document.body.className = '';
+          document.body.classList.add(`theme-${theme}`);
+
           // Update nav active states
           navLogin.classList.remove('active');
           navRegister.classList.remove('active');
@@ -433,6 +619,7 @@
       e.preventDefault();
       const username = document.getElementById('register-username').value.trim();
       const password = document.getElementById('register-password').value.trim();
+      const theme = document.getElementById('register-theme').value;
 
       if (!username || !password) {
         registerMessage.innerText = 'Please enter username and password.';
@@ -444,7 +631,7 @@
         const response = await fetch('/api/auth', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'register', username, password }),
+          body: JSON.stringify({ action: 'register', username, password, theme }),
         });
         const data = await response.json();
 
@@ -464,7 +651,7 @@
 
     // Initialize
     showSection('login');
-    showLoginDetails(true);
+    // Removed showLoginDetails call as text is removed
     showRegisterDetails(false);
   </script>
 </body>
