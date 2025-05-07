@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Professional Typing Test</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body class="theme-male">
+  <div class="container">
+    <header>
+      <h1>Typing Test</h1>
+      <div class="theme-selector">
+        <label for="theme">Choose Theme:</label>
+        <select id="theme">
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+          <option value="cute">Cute</option>
+        </select>
+      </div>
+    </header>
+    <main>
+      <div id="test-text" class="test-text"></div>
+      <textarea id="input-area" placeholder="Start typing here..." autofocus></textarea>
+      <div class="stats">
+        <div>Time Left: <span id="time-left">60</span>s</div>
+        <div>WPM: <span id="wpm">0</span></div>
+        <div>Accuracy: <span id="accuracy">100</span>%</div>
+        <div>Errors: <span id="errors">0</span></div>
+      </div>
+      <button id="restart-btn">Restart Test</button>
+      <div id="result" class="result"></div>
+    </main>
+    <footer>
+      <p>Made for Vercel Serverless Deployment</p>
+    </footer>
+  </div>
+  <script src="/script.js"></script>
+</body>
+</html>

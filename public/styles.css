@@ -1,0 +1,136 @@
+:root {
+  --bg-color: #f0f0f0;
+  --text-color: #222;
+  --primary-color: #007bff;
+  --error-color: #dc3545;
+  --success-color: #28a745;
+  --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+  margin: 0;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  font-family: var(--font-family);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+.container {
+  background: white;
+  padding: 2rem;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 700px;
+  box-shadow: 0 0 15px rgba(0,0,0,0.1);
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+h1 {
+  margin: 0;
+  font-weight: 700;
+}
+
+.theme-selector select {
+  padding: 0.3rem 0.5rem;
+  font-size: 1rem;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+.test-text {
+  font-size: 1.2rem;
+  line-height: 1.5;
+  border: 1px solid #ddd;
+  padding: 1rem;
+  border-radius: 8px;
+  height: 150px;
+  overflow-y: auto;
+  margin-bottom: 1rem;
+  user-select: none;
+  white-space: pre-wrap;
+}
+
+.test-text .correct {
+  color: var(--success-color);
+}
+
+.test-text .incorrect {
+  color: var(--error-color);
+  text-decoration: underline;
+}
+
+#input-area {
+  width: 100%;
+  height: 100px;
+  font-size: 1.1rem;
+  padding: 0.5rem;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  resize: none;
+  margin-bottom: 1rem;
+  box-sizing: border-box;
+}
+
+.stats {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+#restart-btn {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 0.7rem 1.2rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+#restart-btn:hover {
+  background-color: #0056b3;
+}
+
+.result {
+  margin-top: 1rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+/* Themes */
+
+body.theme-male {
+  --bg-color: #e3f2fd;
+  --text-color: #0d47a1;
+  --primary-color: #1976d2;
+  --error-color: #b71c1c;
+  --success-color: #2e7d32;
+}
+
+body.theme-female {
+  --bg-color: #fce4ec;
+  --text-color: #880e4f;
+  --primary-color: #ad1457;
+  --error-color: #b71c1c;
+  --success-color: #c2185b;
+}
+
+body.theme-cute {
+  --bg-color: #fff0f6;
+  --text-color: #d81b60;
+  --primary-color: #f48fb1;
+  --error-color: #e91e63;
+  --success-color: #f06292;
+}
