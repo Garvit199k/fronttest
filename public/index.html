@@ -16,25 +16,447 @@
           <option value="male">Male</option>
           <option value="female">Female</option>
           <option value="cute">Cute</option>
+          <option value="pastel">Pastel</option>
+          <option value="soft">Soft</option>
+          <option value="calm">Calm</option>
+          <option value="dark">Dark</option>
         </select>
       </div>
+      <nav>
+        <button id="nav-login" class="nav-btn active">Login</button>
+        <button id="nav-register" class="nav-btn">Register</button>
+        <button id="nav-leaderboard" class="nav-btn">Leaderboard</button>
+        <button id="nav-about" class="nav-btn">About</button>
+      </nav>
     </header>
     <main>
-      <div id="test-text" class="test-text"></div>
-      <textarea id="input-area" placeholder="Start typing here..." autofocus></textarea>
-      <div class="stats">
-        <div>Time Left: <span id="time-left">60</span>s</div>
-        <div>WPM: <span id="wpm">0</span></div>
-        <div>Accuracy: <span id="accuracy">100</span>%</div>
-        <div>Errors: <span id="errors">0</span></div>
-      </div>
+      <section id="login-section" class="auth-section">
+        <h2>Login</h2>
+        <p>Please enter your username and password to login to the typing test.</p>
+        <form id="login-form">
+          <label for="login-username">Username</label>
+          <input type="text" id="login-username" placeholder="Enter your username" required />
+          <label for="login-password">Password</label>
+          <input type="password" id="login-password" placeholder="Enter your password" required />
+          <button type="submit">Login</button>
+        </form>
+        <div id="login-message" class="auth-message"></div>
+      </section>
+      <section id="register-section" class="auth-section" style="display:none;">
+        <h2>Register</h2>
+        <p>Create a new account by choosing a username and password.</p>
+        <form id="register-form">
+          <label for="register-username">Username</label>
+          <input type="text" id="register-username" placeholder="Choose a username" required />
+          <label for="register-password">Password</label>
+          <input type="password" id="register-password" placeholder="Choose a password" required />
+          <button type="submit">Register</button>
+        </form>
+        <div id="register-message" class="auth-message"></div>
+      </section>
+      <div id="authenticated-area" style="display:none;">
+        <section id="test-container">
+          <div id="test-text" class="test-text"></div>
+          <textarea id="input-area" placeholder="Start typing here..." autofocus></textarea>
+          <div class="stats">
+            <div>Time Left: <span id="time-left">60</span>s</div>
+            <div>
+              Set Time:
+              <select id="time-option">
+                <option value="30">30 seconds</option>
+                <option value="60" selected>60 seconds</option>
+                <option value="120">2 minutes</option>
+                <option value="300">5 minutes</option>
+              </select>
+            </div>
+            <div>WPM: <span id="wpm">0</span></div>
+            <div>Accuracy: <span id="accuracy">100</span>%</div>
+            <div>Errors: <span id="errors">0</span></div>
+          </div>
       <button id="restart-btn">Restart Test</button>
       <div id="result" class="result"></div>
+    </section>
+    <section id="leaderboard-section">
+      <h2>Leaderboard</h2>
+      <table id="leaderboard-table">
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Username</th>
+            <th>WPM</th>
+            <th>Accuracy</th>
+            <th>Time</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Leaderboard entries will be inserted here -->
+        </tbody>
+      </table>
+    </section>
+      </div>
+      <section id="about-section" style="display:none;">
+        <h2>About</h2>
+        <p>This typing test application includes the following features:</p>
+        <ul>
+          <li>Separate login and registration views for better user experience.</li>
+          <li>Multiple themes to choose from, including a new dark theme.</li>
+          <li>Leaderboard to track top performers by WPM and accuracy.</li>
+          <li>Customizable test durations with options in seconds and minutes.</li>
+          <li>Real-time stats including WPM, accuracy, errors, and time left.</li>
+          <li>Developed by Garvit and Karan.</li>
+        </ul>
+      </section>
     </main>
     <footer>
-      <p>Made for Vercel Serverless Deployment</p>
+      <p>Developed by Garvit and Karan</p>
     </footer>
   </div>
-  <script src="/script.js"></script>
+  <script>
+    // JavaScript code combining auth.js, test.js, leaderboard.js
+
+    // Elements
+    const loginSection = document.getElementById('login-section');
+    const registerSection = document.getElementById('register-section');
+    const testContainer = document.getElementById('test-container');
+    const leaderboardSection = document.getElementById('leaderboard-section');
+    const aboutSection = document.getElementById('about-section');
+
+    const loginForm = document.getElementById('login-form');
+    const registerForm = document.getElementById('register-form');
+
+    const loginMessage = document.getElementById('login-message');
+    const registerMessage = document.getElementById('register-message');
+
+    const testTextElement = document.getElementById('test-text');
+    const inputArea = document.getElementById('input-area');
+    const timeLeftElement = document.getElementById('time-left');
+    const wpmElement = document.getElementById('wpm');
+    const accuracyElement = document.getElementById('accuracy');
+    const errorsElement = document.getElementById('errors');
+    const restartBtn = document.getElementById('restart-btn');
+    const themeSelector = document.getElementById('theme');
+    const timeOption = document.getElementById('time-option');
+    const resultElement = document.getElementById('result');
+
+    const navLogin = document.getElementById('nav-login');
+    const navRegister = document.getElementById('nav-register');
+    const navLeaderboard = document.getElementById('nav-leaderboard');
+    const navAbout = document.getElementById('nav-about');
+
+    const leaderboardTableBody = document.querySelector('#leaderboard-table tbody');
+
+    let timer = null;
+    let timeLeft = 60;
+    let totalErrors = 0;
+    let errors = 0;
+    let isTyping = false;
+    let typedChars = 0;
+    let testText = '';
+    let currentUser = null;
+
+    // Show/hide sections
+    function showSection(section) {
+      loginSection.style.display = 'none';
+      registerSection.style.display = 'none';
+      testContainer.style.display = 'none';
+      leaderboardSection.style.display = 'none';
+      aboutSection.style.display = 'none';
+
+      navLogin.classList.remove('active');
+      navRegister.classList.remove('active');
+      navLeaderboard.classList.remove('active');
+      navAbout.classList.remove('active');
+
+      switch (section) {
+        case 'login':
+          loginSection.style.display = 'block';
+          navLogin.classList.add('active');
+          showLoginDetails(true);
+          showRegisterDetails(false);
+          break;
+        case 'register':
+          registerSection.style.display = 'block';
+          navRegister.classList.add('active');
+          showLoginDetails(false);
+          showRegisterDetails(true);
+          break;
+        case 'test':
+          testContainer.style.display = 'block';
+          break;
+        case 'leaderboard':
+          leaderboardSection.style.display = 'block';
+          navLeaderboard.classList.add('active');
+          displayLeaderboard();
+          break;
+        case 'about':
+          aboutSection.style.display = 'block';
+          navAbout.classList.add('active');
+          break;
+      }
+    }
+
+    navLogin.addEventListener('click', () => showSection('login'));
+    navRegister.addEventListener('click', () => showSection('register'));
+    navLeaderboard.addEventListener('click', () => showSection('leaderboard'));
+    navAbout.addEventListener('click', () => showSection('about'));
+
+    // Show/hide login and register details
+    function showLoginDetails(show) {
+      let loginDetails = document.getElementById('login-details');
+      if (!loginDetails) {
+        loginDetails = document.createElement('p');
+        loginDetails.id = 'login-details';
+        loginDetails.textContent = 'Please enter your username and password to login to the typing test.';
+        loginSection.insertBefore(loginDetails, loginForm);
+      }
+      loginDetails.style.display = show ? 'block' : 'none';
+    }
+
+    function showRegisterDetails(show) {
+      let registerDetails = document.getElementById('register-details');
+      if (!registerDetails) {
+        registerDetails = document.createElement('p');
+        registerDetails.id = 'register-details';
+        registerDetails.textContent = 'Create a new account by choosing a username and password.';
+        registerSection.insertBefore(registerDetails, registerForm);
+      }
+      registerDetails.style.display = show ? 'block' : 'none';
+    }
+
+    // Fetch test text
+    function fetchTestText() {
+      fetch('/api/texts')
+        .then(response => response.json())
+        .then(data => {
+          testText = data.text;
+          displayTestText();
+        })
+        .catch(() => {
+          testText = "The quick brown fox jumps over the lazy dog.";
+          displayTestText();
+        });
+    }
+
+    // Display test text
+    function displayTestText() {
+      testTextElement.innerHTML = '';
+      testText.split('').forEach(char => {
+        const span = document.createElement('span');
+        span.innerText = char;
+        testTextElement.appendChild(span);
+      });
+    }
+
+    // Timer update
+    function updateTimer() {
+      if (timeLeft > 0) {
+        timeLeft--;
+        timeLeftElement.innerText = timeLeft;
+      } else {
+        finishTest();
+      }
+    }
+
+    // Finish test
+    function finishTest() {
+      clearInterval(timer);
+      inputArea.disabled = true;
+      const timeSpent = (parseInt(timeOption.value) - timeLeft);
+      const wpm = Math.round(((typedChars / 5) / (timeSpent / 60)) || 0);
+      const accuracy = Math.round(((typedChars - totalErrors) / typedChars) * 100) || 0;
+      wpmElement.innerText = wpm;
+      accuracyElement.innerText = accuracy;
+      errorsElement.innerText = totalErrors;
+
+      // Show victory or try again message with icon
+      resultElement.innerHTML = '';
+      if (wpm >= 40 && accuracy >= 90) {
+        resultElement.className = 'result victory';
+        resultElement.innerHTML = `
+          <svg class="victory-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" fill="currentColor"/>
+          </svg>
+          Test finished! Your WPM: ${wpm}, Accuracy: ${accuracy}%. Victory!
+        `;
+      } else {
+        resultElement.className = 'result try-again';
+        resultElement.innerHTML = `
+          <svg class="try-again-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 13l-1.41 1.41L12 13.41l-3.59 3.59L7 15l3.59-3.59L7 7.83 8.41 6.41 12 10l3.59-3.59L17 7.83l-3.59 3.58L17 15z" fill="currentColor"/>
+          </svg>
+          Test finished! Your WPM: ${wpm}, Accuracy: ${accuracy}%. Try again!
+        `;
+      }
+
+      saveScore(currentUser, wpm, accuracy, timeSpent);
+    }
+
+    // Reset test
+    function resetTest() {
+      clearInterval(timer);
+      timeLeft = parseInt(timeOption.value);
+      totalErrors = 0;
+      errors = 0;
+      isTyping = false;
+      typedChars = 0;
+      inputArea.disabled = false;
+      inputArea.value = '';
+      timeLeftElement.innerText = timeLeft;
+      wpmElement.innerText = 0;
+      accuracyElement.innerText = 100;
+      errorsElement.innerText = 0;
+      resultElement.innerText = '';
+      displayTestText();
+    }
+
+    // Input event
+    inputArea.addEventListener('input', () => {
+      if (!isTyping) {
+        isTyping = true;
+        timer = setInterval(updateTimer, 1000);
+      }
+
+      typedChars = inputArea.value.length;
+
+      const textSpans = testTextElement.querySelectorAll('span');
+      errors = 0;
+
+      textSpans.forEach((span, index) => {
+        const typedChar = inputArea.value[index];
+        if (typedChar == null) {
+          span.classList.remove('correct', 'incorrect');
+        } else if (typedChar === span.innerText) {
+          span.classList.add('correct');
+          span.classList.remove('incorrect');
+        } else {
+          span.classList.add('incorrect');
+          span.classList.remove('correct');
+          errors++;
+        }
+      });
+
+      totalErrors = errors;
+      errorsElement.innerText = totalErrors;
+
+      const correctChars = typedChars - totalErrors;
+      const accuracy = Math.round((correctChars / typedChars) * 100) || 0;
+      accuracyElement.innerText = accuracy;
+
+      const timeSpent = (parseInt(timeOption.value) - timeLeft);
+      const wpm = Math.round(((correctChars / 5) / (timeSpent / 60)) || 0);
+      wpmElement.innerText = wpm;
+
+      if (inputArea.value.length === testText.length) {
+        finishTest();
+      }
+    });
+
+    restartBtn.addEventListener('click', resetTest);
+
+    themeSelector.addEventListener('change', (e) => {
+      document.body.className = '';
+      document.body.classList.add(`theme-${e.target.value}`);
+    });
+
+    // Leaderboard functions
+    function saveScore(username, wpm, accuracy, timeSpent) {
+      if (!username) return;
+      let leaderboard = JSON.parse(localStorage.getItem('leaderboard')) || [];
+      leaderboard.push({ username, wpm, accuracy, timeSpent });
+      leaderboard.sort((a, b) => b.wpm - a.wpm || b.accuracy - a.accuracy);
+      leaderboard = leaderboard.slice(0, 10);
+      localStorage.setItem('leaderboard', JSON.stringify(leaderboard));
+    }
+
+    function displayLeaderboard() {
+      let leaderboard = JSON.parse(localStorage.getItem('leaderboard')) || [];
+      leaderboardTableBody.innerHTML = '';
+      leaderboard.forEach((entry, index) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${index + 1}</td>
+          <td>${entry.username}</td>
+          <td>${entry.wpm}</td>
+          <td>${entry.accuracy}%</td>
+          <td>${entry.timeSpent}s</td>
+        `;
+        leaderboardTableBody.appendChild(tr);
+      });
+    }
+
+    // Login form submit
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const username = document.getElementById('login-username').value.trim();
+      const password = document.getElementById('login-password').value.trim();
+
+      if (!username || !password) {
+        loginMessage.innerText = 'Please enter username and password.';
+        loginMessage.style.color = 'red';
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/auth', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'login', username, password }),
+        });
+        const data = await response.json();
+
+        if (response.ok) {
+          loginMessage.style.color = 'green';
+          loginMessage.innerText = data.message;
+          currentUser = username;
+          showSection('test');
+        } else {
+          loginMessage.style.color = 'red';
+          loginMessage.innerText = data.error || 'Login failed.';
+        }
+      } catch (error) {
+        loginMessage.style.color = 'red';
+        loginMessage.innerText = 'Error connecting to server.';
+      }
+    });
+
+    // Register form submit
+    registerForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const username = document.getElementById('register-username').value.trim();
+      const password = document.getElementById('register-password').value.trim();
+
+      if (!username || !password) {
+        registerMessage.innerText = 'Please enter username and password.';
+        registerMessage.style.color = 'red';
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/auth', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'register', username, password }),
+        });
+        const data = await response.json();
+
+        if (response.ok) {
+          registerMessage.style.color = 'green';
+          registerMessage.innerText = data.message + ' Please login now.';
+          showSection('login');
+        } else {
+          registerMessage.style.color = 'red';
+          registerMessage.innerText = data.error || 'Registration failed.';
+        }
+      } catch (error) {
+        registerMessage.style.color = 'red';
+        registerMessage.innerText = 'Error connecting to server.';
+      }
+    });
+
+    // Initialize
+    showSection('login');
+    showLoginDetails(true);
+    showRegisterDetails(false);
+  </script>
 </body>
 </html>
