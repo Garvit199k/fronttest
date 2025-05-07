@@ -32,25 +32,23 @@
     <main>
       <section id="login-section" class="auth-section">
         <h2>Login</h2>
-        <p>Please enter your username and password to login to the typing test.</p>
         <form id="login-form">
           <label for="login-username">Username</label>
           <input type="text" id="login-username" placeholder="Enter your username" required />
           <label for="login-password">Password</label>
           <input type="password" id="login-password" placeholder="Enter your password" required />
-          <button type="submit">Login</button>
+          <button type="submit" class="btn-primary">Login</button>
         </form>
         <div id="login-message" class="auth-message"></div>
       </section>
       <section id="register-section" class="auth-section" style="display:none;">
         <h2>Register</h2>
-        <p>Create a new account by choosing a username and password.</p>
         <form id="register-form">
           <label for="register-username">Username</label>
           <input type="text" id="register-username" placeholder="Choose a username" required />
           <label for="register-password">Password</label>
           <input type="password" id="register-password" placeholder="Choose a password" required />
-          <button type="submit">Register</button>
+          <button type="submit" class="btn-primary">Register</button>
         </form>
         <div id="register-message" class="auth-message"></div>
       </section>
@@ -408,7 +406,18 @@
           loginMessage.style.color = 'green';
           loginMessage.innerText = data.message;
           currentUser = username;
+          // Show authenticated area and hide login/register
+          document.getElementById('authenticated-area').style.display = 'block';
+          loginSection.style.display = 'none';
+          registerSection.style.display = 'none';
+          // Update nav active states
+          navLogin.classList.remove('active');
+          navRegister.classList.remove('active');
+          navLeaderboard.classList.remove('active');
+          navAbout.classList.remove('active');
+          // Show test container
           showSection('test');
+          fetchTestText();
         } else {
           loginMessage.style.color = 'red';
           loginMessage.innerText = data.error || 'Login failed.';
