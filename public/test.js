@@ -15,9 +15,10 @@ let errors = 0;
 let isTyping = false;
 let typedChars = 0;
 let currentUser = null;
+let testText = '';
 
-function fetchTestText() {
-  fetch('/api/texts')
+function fetchTestText(difficulty = 'normal') {
+  fetch(`/api/texts?difficulty=${difficulty}`)
     .then(response => response.json())
     .then(data => {
       testText = data.text;
@@ -125,6 +126,7 @@ restartBtn.addEventListener('click', resetTest);
 
 document.addEventListener('userLoggedIn', (e) => {
   currentUser = e.detail.username;
-  fetchTestText();
+  // Default difficulty normal, can be extended to select difficulty UI
+  fetchTestText('normal');
   resetTest();
 });
