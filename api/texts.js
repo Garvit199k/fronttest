@@ -16,11 +16,12 @@ export default function handler(req, res) {
   ];
 
   const duration = parseInt(req.query.duration) || 60;
+  const level = parseInt(req.query.level) || 1;
 
   let texts;
-  if (duration <= 30) {
+  if (level <= 3) {
     texts = shortTexts;
-  } else if (duration <= 60) {
+  } else if (level <= 6) {
     texts = mediumTexts;
   } else {
     texts = longTexts;

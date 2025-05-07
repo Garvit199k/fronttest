@@ -105,8 +105,6 @@
             <div>Accuracy: <span id="accuracy">100</span>%</div>
             <div>Errors: <span id="errors">0</span></div>
           </div>
-      <button id="restart-btn">Restart Test</button>
-      <div id="result" class="result"></div>
     </section>
     <section id="leaderboard-section">
       <h2>Leaderboard</h2>
@@ -192,6 +190,7 @@
       testContainer.style.display = 'none';
       leaderboardSection.style.display = 'none';
       aboutSection.style.display = 'none';
+      document.getElementById('authenticated-area').style.display = 'none';
 
       navLogin.classList.remove('active');
       navRegister.classList.remove('active');
@@ -210,6 +209,7 @@
           showRegisterDetails(true);
           break;
         case 'test':
+          document.getElementById('authenticated-area').style.display = 'block';
           testContainer.style.display = 'block';
           break;
         case 'leaderboard':
@@ -251,7 +251,8 @@
     // Fetch test text
     function fetchTestText() {
       const duration = parseInt(timeOption.value) || 60;
-      fetch(`/api/texts?duration=${duration}`)
+      const level = parseInt(localStorage.getItem('typingTestLevel')) || 1;
+      fetch(`/api/texts?duration=${duration}&level=${level}`)
         .then(response => response.json())
         .then(data => {
           testText = data.text;
@@ -304,6 +305,11 @@
           </svg>
           Test finished! Your WPM: ${wpm}, Accuracy: ${accuracy}%. Victory!
         `;
+        // Increment level on victory
+        let level = parseInt(localStorage.getItem('typingTestLevel')) || 1;
+        level++;
+        localStorage.setItem('typingTestLevel', level.toString());
+        updateLevelDisplay(level);
       } else {
         resultElement.className = 'result try-again';
         resultElement.innerHTML = `
@@ -393,25 +399,6 @@
 
     let raceInterval = null;
     let opponentProgress = 0;
-    let currentLevel = 1;
-    const maxLevel = 100;
-
-    // Load level from localStorage
-    function loadLevel() {
-      const savedLevel = localStorage.getItem('typingTestLevel');
-      currentLevel = savedLevel ? parseInt(savedLevel) : 1;
-      updateAchievementDisplay();
-    }
-
-    // Save level to localStorage
-    function saveLevel() {
-      localStorage.setItem('typingTestLevel', currentLevel.toString());
-    }
-
-    // Update achievement display
-    function updateAchievementDisplay() {
-      achievementDisplay.textContent = `Level: ${currentLevel} / ${maxLevel}`;
-    }
 
     // Simulate opponent progress in race mode
     function startRace() {
@@ -419,8 +406,8 @@
       opponentProgressBar.value = 0;
       raceProgress.style.display = 'block';
 
-      // Opponent speed depends on level (higher level, faster opponent)
-      const opponentSpeed = 0.5 + (currentLevel / maxLevel) * 1.5; // progress per second
+      // Fixed opponent speed
+      const opponentSpeed = 1.0; // progress per second
 
       raceInterval = setInterval(() => {
         opponentProgress += opponentSpeed;
@@ -496,7 +483,7 @@
     }
     inputArea.addEventListener('input', inputHandler);
 
-    // Override finishTest to add race and achievement logic
+    // Override finishTest to add race logic
     const originalFinishTest = finishTest;
     finishTest = function() {
       originalFinishTest();
@@ -508,34 +495,27 @@
         let raceResult = '';
         if (userProgress >= 100 && (!opponentFinished || wpmElement.innerText >= opponentProgressBar.value)) {
           raceResult = 'You won the race! 🎉';
-          if (currentLevel < maxLevel) {
-            currentLevel++;
-            saveLevel();
-            updateAchievementDisplay();
-          }
         } else {
           raceResult = 'You lost the race. Try again!';
-          if (currentLevel > 1) {
-            currentLevel--;
-            saveLevel();
-            updateAchievementDisplay();
-          }
         }
         resultElement.innerText += `\n${raceResult}`;
-      } else {
-        // Update level on normal mode finishTest
-        if (currentLevel < maxLevel) {
-          currentLevel++;
-          saveLevel();
-          updateAchievementDisplay();
-        }
       }
 
       playSound(soundFinish);
     };
 
     // Initialize level on page load
-    loadLevel();
+    function updateLevelDisplay(level) {
+      const achievementDisplay = document.getElementById('achievement-display');
+      achievementDisplay.textContent = `Level: ${level}`;
+    }
+
+    function initializeLevel() {
+      let level = parseInt(localStorage.getItem('typingTestLevel')) || 1;
+      updateLevelDisplay(level);
+    }
+
+    initializeLevel();
 
     // Re-add themeSelector event listener for dynamic theme changes
     const themeSelector = document.getElementById('theme');
